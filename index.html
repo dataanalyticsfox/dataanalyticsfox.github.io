@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carrie Minerich | Data Engineering Portfolio</title>
+  <meta name="description" content="Portfolio of data engineering and analytics projects: Python, SQL, ETL, and clinical data analysis.">
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --card: #ffffff;
+      --text: #1c2430;
+      --muted: #5b6677;
+      --accent: #0b6e8a;
+      --border: #e2e6ec;
+      --chip: #e6f2f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12161c;
+        --card: #1b212a;
+        --text: #e8ecf1;
+        --muted: #9aa5b5;
+        --accent: #58b8d4;
+        --border: #2a323d;
+        --chip: #22303a;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 0 1.25rem; }
+    header { padding: 4rem 0 2rem; }
+    h1 { font-size: 2.4rem; margin: 0 0 .25rem; letter-spacing: -0.02em; }
+    .tagline { font-size: 1.15rem; color: var(--muted); margin: 0 0 1.25rem; }
+    .links a {
+      display: inline-block;
+      margin-right: .5rem;
+      margin-bottom: .5rem;
+      padding: .45rem .9rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .95rem;
+      background: var(--card);
+    }
+    .links a:hover { border-color: var(--accent); }
+    section { padding: 1.5rem 0; }
+    h2 { font-size: 1.4rem; margin: 0 0 1rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .card h3 { margin: 0 0 .5rem; font-size: 1.1rem; }
+    .card h3 a { color: var(--text); text-decoration: none; }
+    .card h3 a:hover { color: var(--accent); }
+    .card p { margin: 0 0 1rem; color: var(--muted); flex: 1; }
+    .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .9rem; }
+    .tag {
+      background: var(--chip);
+      color: var(--accent);
+      font-size: .78rem;
+      font-weight: 600;
+      padding: .15rem .6rem;
+      border-radius: 999px;
+    }
+    .repo { font-weight: 600; font-size: .92rem; color: var(--accent); text-decoration: none; }
+    .repo:hover { text-decoration: underline; }
+    .skills { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .skills .tag { font-size: .88rem; padding: .25rem .8rem; }
+    footer { padding: 2rem 0 3rem; color: var(--muted); font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Carrie Minerich</h1>
+      <p class="tagline">Data engineer and analytics engineer. I build reliable pipelines, clean SQL models, and analysis that people can act on.</p>
+      <div class="links">
+        <a href="https://github.com/dataanalyticsfox">GitHub</a>
+        <a href="https://orcid.org/0000-0002-3969-3268">ORCID</a>
+      </div>
+    </header>
+
+    <section>
+      <h2>Projects</h2>
+      <div class="grid">
+
+        <article class="card">
+          <h3><a href="https://github.com/dataanalyticsfox/Archive_Transfer">Archive Transfer</a></h3>
+          <p>Python code that uses the Drupal API to copy data products from a legacy data store into new storage.</p>
+          <div class="tags"><span class="tag">Python</span><span class="tag">APIs</span><span class="tag">Data migration</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/Archive_Transfer">View repo &rarr;</a>
+        </article>
+
+        <article class="card">
+          <h3><a href="https://github.com/dataanalyticsfox/clinical_data_analysis">Clinical Data Analysis</a></h3>
+          <p>Exploratory and statistical analysis of clinical data, documented in a Jupyter notebook.</p>
+          <div class="tags"><span class="tag">Jupyter</span><span class="tag">Python</span><span class="tag">Statistics</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/clinical_data_analysis">View repo &rarr;</a>
+        </article>
+
+        <article class="card">
+          <h3><a href="https://github.com/dataanalyticsfox/health_claim_sql">Health Claim SQL</a></h3>
+          <p>Work on a recent SQL health claims challenge: the data set plus my answers to the questionnaire.</p>
+          <div class="tags"><span class="tag">SQL</span><span class="tag">Healthcare</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/health_claim_sql">View repo &rarr;</a>
+        </article>
+
+        <article class="card">
+          <h3><a href="https://github.com/dataanalyticsfox/Indeed_ipynb_pandas_nosql">Indeed Job Data: pandas + NoSQL</a></h3>
+          <p>Notebook work that pulls job listing data into pandas and a NoSQL store for analysis.</p>
+          <div class="tags"><span class="tag">pandas</span><span class="tag">NoSQL</span><span class="tag">Jupyter</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/Indeed_ipynb_pandas_nosql">View repo &rarr;</a>
+        </article>
+
+        <article class="card">
+          <h3><a href="https://github.com/dataanalyticsfox/Zombie_Eligibility">Zombie Eligibility</a></h3>
+          <p>A Python solution for removing duplicate enrollment data from a relational database. Members still active in a legacy vendor source were also enrolled in the direct source, inflating monthly eligibility counts. The repo includes a slide deck on the problem and approach.</p>
+          <div class="tags"><span class="tag">Python</span><span class="tag">Data quality</span><span class="tag">Healthcare</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/Zombie_Eligibility">View repo &rarr;</a>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <h2>Skills</h2>
+      <div class="skills">
+        <span class="tag">SQL</span>
+        <span class="tag">dbt</span>
+        <span class="tag">Python</span>
+        <span class="tag">Snowflake</span>
+        <span class="tag">AWS</span>
+        <span class="tag">ETL / ELT</span>
+        <span class="tag">Metabase</span>
+        <span class="tag">Statistics</span>
+      </div>
+    </section>
+
+    <footer>
+      More work on <a class="repo" href="https://github.com/dataanalyticsfox">GitHub</a>.
+    </footer>
+  </div>
+</body>
+</html>
