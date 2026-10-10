@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Carrie Minerich | Data Engineering Portfolio</title>
+  <meta name="description" content="Portfolio of data engineering and analytics projects: Python, SQL, ETL, and clinical data analysis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0F3D4C;        /* deep teal */
+      --ink-deep: #0A2A35;
+      --fox: #F2672A;        /* fox orange */
+      --sun: #FFC24B;        /* amber */
+      --snow: #FFF8F0;
+
+      --bg: #EEF5F5;
+      --card: #FFFFFF;
+      --text: #14262E;
+      --muted: #4A5F69;
+      --border: #D5E2E4;
+      --link: #B93A0B;
+      --focus: #0F3D4C;
+
+      --heading: "Bricolage Grotesque", "Trebuchet MS", "Segoe UI", sans-serif;
+      --body: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0B1B21;
+        --card: #132830;
+        --text: #E6EFF1;
+        --muted: #9DB3BA;
+        --border: #23414B;
+        --link: #FF9A62;
+        --focus: #FFC24B;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 1rem; }
+    body {
+      margin: 0;
+      font-family: var(--body);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      background-color: var(--ink);
+      background-image: radial-gradient(rgba(255,255,255,.09) 1.2px, transparent 1.2px);
+      background-size: 22px 22px;
+      color: var(--snow);
+      padding: 3.5rem 0 4rem;
+      border-bottom: 8px solid var(--fox);
+    }
+    .hero .wrap {
+      display: grid;
+      grid-template-columns: 1fr 230px;
+      gap: 2.5rem;
+      align-items: center;
+    }
+    .hero h1 {
+      font-family: var(--heading);
+      font-weight: 800;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin: 0 0 1rem;
+    }
+    .hero .tagline {
+      font-size: 1.15rem;
+      max-width: 34em;
+      margin: 0 0 1.75rem;
+      color: #D6E6EA;
+    }
+    .links a {
+      display: inline-block;
+      margin: 0 .6rem .6rem 0;
+      padding: .55rem 1.1rem;
+      border-radius: 999px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: .98rem;
+    }
+    .links a.primary { background: var(--sun); color: var(--ink-deep); }
+    .links a.primary:hover { background: #FFD27A; }
+    .links a.secondary { border: 2px solid rgba(255,248,240,.6); color: var(--snow); }
+    .links a.secondary:hover { border-color: var(--snow); }
+    .hero a:focus-visible { outline-color: var(--sun); }
+
+    .fox { width: 100%; height: auto; display: block; }
+    .fox .ear { transform-box: fill-box; transform-origin: 50% 100%; }
+    .fox .ear-l { animation: twitch .5s ease-in-out .9s 2; }
+    .fox .ear-r { animation: twitch-r .5s ease-in-out 1.1s 1; }
+    @keyframes twitch   { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-9deg); } }
+    @keyframes twitch-r { 0%,100% { transform: rotate(0); } 50% { transform: rotate(9deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .fox .ear { animation: none; }
+    }
+
+    /* ---------- Sections ---------- */
+    main { padding: 1rem 0 1rem; }
+    section { padding: 2.25rem 0 .5rem; }
+    h2 {
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 1.7rem;
+      letter-spacing: -0.01em;
+      margin: 0 0 1.25rem;
+    }
+    .intro { color: var(--muted); max-width: 40em; margin: -.6rem 0 1.5rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1.25rem;
+    }
+    .card {
+      --c: var(--fox);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: 7px solid var(--c);
+      border-radius: 4px 4px 14px 14px;
+      padding: 1.3rem 1.3rem 1.2rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .card h3 {
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 1.2rem;
+      line-height: 1.25;
+      margin: 0 0 .6rem;
+    }
+    .card h3 a { color: var(--text); text-decoration: none; }
+    .card h3 a:hover { text-decoration: underline; text-decoration-color: var(--c); text-decoration-thickness: 3px; text-underline-offset: 4px; }
+    .card p { margin: 0 0 1rem; color: var(--muted); flex: 1; }
+    .tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+    .tag {
+      background: #E3EEF0;
+      background: color-mix(in srgb, var(--c) 18%, var(--card));
+      color: var(--text);
+      font-size: .8rem;
+      font-weight: 600;
+      padding: .15rem .65rem;
+      border-radius: 999px;
+    }
+    .repo { font-weight: 600; font-size: .95rem; color: var(--link); text-decoration: none; }
+    .repo:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+    /* One color per project */
+    .c-teal   { --c: #1E88A8; }
+    .c-sage   { --c: #3F9C7F; }
+    .c-plum   { --c: #9B5DB5; }
+    .c-sun    { --c: #E8A21A; }
+    .c-fox    { --c: #F2672A; }
+
+    .skills { display: flex; flex-wrap: wrap; gap: .55rem; }
+    .skills .tag {
+      --c: var(--ink);
+      font-size: .92rem;
+      padding: .3rem .9rem;
+      border: 1px solid var(--border);
+      background: var(--card);
+    }
+    .skills .tag:nth-child(5n+1) { border-bottom: 3px solid #1E88A8; }
+    .skills .tag:nth-child(5n+2) { border-bottom: 3px solid #3F9C7F; }
+    .skills .tag:nth-child(5n+3) { border-bottom: 3px solid #9B5DB5; }
+    .skills .tag:nth-child(5n+4) { border-bottom: 3px solid #E8A21A; }
+    .skills .tag:nth-child(5n+5) { border-bottom: 3px solid #F2672A; }
+
+    footer { padding: 2.5rem 0 3.5rem; color: var(--muted); font-size: .95rem; }
+
+    @media (max-width: 680px) {
+      .hero { padding: 2.5rem 0 3rem; }
+      .hero .wrap { grid-template-columns: 1fr; }
+      .fox { width: 150px; order: -1; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <div>
+        <h1>Carrie Minerich</h1>
+        <p class="tagline">Data engineer and analytics engineer. I build robust pipelines, convert legacy data, and reliable data stores so teams can trust their numbers.</p>
+        <div class="links">
+          <a class="primary" href="#projects">See my projects</a>
+          <a class="secondary" href="https://github.com/dataanalyticsfox">GitHub</a>
+          <a class="secondary" href="https://orcid.org/0000-0002-3969-3268">ORCID</a>
+        </div>
+      </div>
+
+      <svg class="fox" viewBox="0 0 200 190" role="img" aria-label="Geometric illustration of a fox's face">
+        <polygon points="75,60 100,55 125,60 180,95 100,175 20,95" fill="#F2672A"/>
+        <g class="ear ear-l">
+          <polygon points="30,25 75,60 20,95" fill="#F2672A"/>
+          <polygon points="38,42 62,62 40,80" fill="#0A2A35"/>
+        </g>
+        <g class="ear ear-r">
+          <polygon points="170,25 125,60 180,95" fill="#F2672A"/>
+          <polygon points="162,42 138,62 160,80" fill="#0A2A35"/>
+        </g>
+        <polygon points="20,95 100,118 180,95 100,175" fill="#FFF8F0"/>
+        <polygon points="56,86 84,93 66,102" fill="#0A2A35"/>
+        <polygon points="144,86 116,93 134,102" fill="#0A2A35"/>
+        <polygon points="88,146 112,146 100,160" fill="#0A2A35"/>
+      </svg>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="projects">
+      <h2>Projects</h2>
+      <div class="grid">
+
+        <article class="card c-teal">
+          <h3><a href="https://github.com/dataanalyticsfox/Archive_Transfer">Archive Transfer</a></h3>
+          <p>Python code that uses the Drupal API to copy data products from a legacy data store into new storage.</p>
+          <div class="tags"><span class="tag">Python</span><span class="tag">APIs</span><span class="tag">Data migration</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/Archive_Transfer">View repo &rarr;</a>
+        </article>
+
+        <article class="card c-sage">
+          <h3><a href="https://github.com/dataanalyticsfox/clinical_data_analysis">Clinical Data Analysis</a></h3>
+          <p>Exploratory and statistical analysis of clinical data, documented in a Jupyter notebook.</p>
+          <div class="tags"><span class="tag">Jupyter</span><span class="tag">Python</span><span class="tag">Statistics</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/clinical_data_analysis">View repo &rarr;</a>
+        </article>
+
+        <article class="card c-plum">
+          <h3><a href="https://github.com/dataanalyticsfox/health_claim_sql">Health Claim SQL</a></h3>
+          <p>Work on a recent SQL health claims challenge: the data set plus my answers to the questionnaire.</p>
+          <div class="tags"><span class="tag">SQL</span><span class="tag">Healthcare</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/health_claim_sql">View repo &rarr;</a>
+        </article>
+
+        <article class="card c-sun">
+          <h3><a href="https://github.com/dataanalyticsfox/Indeed_ipynb_pandas_nosql">Indeed Job Data: pandas + NoSQL</a></h3>
+          <p>Notebook work that pulls job listing data into pandas and a NoSQL store for analysis.</p>
+          <div class="tags"><span class="tag">pandas</span><span class="tag">NoSQL</span><span class="tag">Jupyter</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/Indeed_ipynb_pandas_nosql">View repo &rarr;</a>
+        </article>
+
+        <article class="card c-fox">
+          <h3><a href="https://github.com/dataanalyticsfox/Zombie_Eligibility">Zombie Eligibility</a></h3>
+          <p>A Python solution for removing duplicate enrollment data from a relational database. Members still active in a legacy vendor source were also enrolled in the direct source, inflating monthly eligibility counts. The repo includes a slide deck on the problem and approach.</p>
+          <div class="tags"><span class="tag">Python</span><span class="tag">Data quality</span><span class="tag">Healthcare</span></div>
+          <a class="repo" href="https://github.com/dataanalyticsfox/Zombie_Eligibility">View repo &rarr;</a>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <h2>Skills</h2>
+      <div class="skills">
+        <span class="tag">SQL</span>
+        <span class="tag">dbt</span>
+        <span class="tag">Python</span>
+        <span class="tag">Snowflake</span>
+        <span class="tag">AWS</span>
+        <span class="tag">ETL / ELT</span>
+        <span class="tag">Metabase</span>
+        <span class="tag">Statistics</span>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">More work on <a class="repo" href="https://github.com/dataanalyticsfox">GitHub</a>.</div>
+  </footer>
+</body>
+</html>
