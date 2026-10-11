@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Case Study | Carrie Minerich</title>
+  <meta name="description" content="How I approach a data problem and architect a solution: a dbt project walkthrough.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <!--
+    BEFORE PUBLISHING: search this file for "TODO". Every yellow-highlighted
+    placeholder is something to replace or delete. Remember to anonymize
+    company, client, vendor, model, and column names, and use ratios or
+    ranges instead of exact figures.
+  -->
+  <style>
+    :root {
+      --ink: #0F3D4C;
+      --ink-deep: #0A2A35;
+      --fox: #F2672A;
+      --sun: #FFC24B;
+      --snow: #FFF8F0;
+
+      --bg: #EEF5F5;
+      --card: #FFFFFF;
+      --text: #14262E;
+      --muted: #4A5F69;
+      --border: #D5E2E4;
+      --link: #B93A0B;
+      --focus: #0F3D4C;
+      --code-bg: #0F2A33;
+      --code-text: #E6EFF1;
+
+      --heading: "Bricolage Grotesque", "Trebuchet MS", "Segoe UI", sans-serif;
+      --body: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0B1B21;
+        --card: #132830;
+        --text: #E6EFF1;
+        --muted: #9DB3BA;
+        --border: #23414B;
+        --link: #FF9A62;
+        --focus: #FFC24B;
+        --code-bg: #091418;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--body); background: var(--bg); color: var(--text); line-height: 1.65; }
+    a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Placeholder highlight: remove each one as you fill it in */
+    .todo {
+      background: rgba(255, 194, 75, .45);
+      color: inherit;
+      padding: .05em .3em;
+      border-radius: 4px;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      background-color: var(--ink);
+      background-image: radial-gradient(rgba(255,255,255,.09) 1.2px, transparent 1.2px);
+      background-size: 22px 22px;
+      color: var(--snow);
+      padding: 2.25rem 0 3rem;
+      border-bottom: 8px solid var(--fox);
+    }
+    .back { color: var(--sun); font-weight: 600; text-decoration: none; font-size: .95rem; }
+    .back:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .hero a:focus-visible { outline-color: var(--sun); }
+    .hero h1 {
+      font-family: var(--heading);
+      font-weight: 800;
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin: 1.5rem 0 .75rem;
+    }
+    .hero .sub { font-size: 1.15rem; color: #D6E6EA; max-width: 36em; margin: 0 0 1.5rem; }
+    .hero .todo { color: var(--ink-deep); }
+    .meta { display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem; margin: 0; padding: 0; list-style: none; }
+    .meta li { font-size: .95rem; }
+    .meta span { display: block; font-weight: 700; font-family: var(--heading); color: var(--sun); }
+
+    /* ---------- Content ---------- */
+    main { padding: 1.5rem 0 2rem; }
+    .note {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--sun);
+      border-radius: 4px 12px 12px 4px;
+      padding: .9rem 1.1rem;
+      color: var(--muted);
+      font-size: .95rem;
+      margin: 1.5rem 0 .5rem;
+    }
+    section { padding: 2rem 0 .25rem; }
+    h2 {
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: -0.01em;
+      margin: 0 0 .75rem;
+    }
+    h2 .n { color: var(--link); margin-right: .4rem; }
+    h3 { font-family: var(--heading); font-size: 1.1rem; margin: 0 0 .4rem; }
+    p { margin: 0 0 1rem; }
+    ul { padding-left: 1.2rem; margin: 0 0 1rem; }
+    li { margin-bottom: .4rem; }
+
+    .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin: 1rem 0; }
+    .option {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: 6px solid var(--border);
+      border-radius: 4px 4px 12px 12px;
+      padding: 1rem 1.1rem;
+    }
+    .option p { color: var(--muted); font-size: .95rem; margin: 0; }
+    .option.chosen { border-top-color: var(--fox); }
+    .badge {
+      display: inline-block;
+      font-size: .78rem;
+      font-weight: 700;
+      background: var(--fox);
+      color: var(--ink-deep);
+      padding: .1rem .6rem;
+      border-radius: 999px;
+      margin-bottom: .5rem;
+    }
+
+    .diagram-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    .diagram { display: block; min-width: 700px; width: 100%; height: auto; }
+    .diagram .box { fill: var(--card); stroke-width: 3; }
+    .diagram .t { fill: var(--text); font-family: var(--heading); font-weight: 700; font-size: 17px; text-anchor: middle; }
+    .diagram .s { fill: var(--muted); font-family: var(--body); font-size: 12.5px; text-anchor: middle; }
+    .diagram .arrow { stroke: var(--muted); stroke-width: 2.5; fill: none; }
+    .diagram .head { fill: var(--muted); }
+
+    .layers { padding-left: 0; list-style: none; }
+    .layers li { padding-left: 1rem; border-left: 5px solid var(--c, var(--border)); margin-bottom: .9rem; }
+    .layers b { font-family: var(--heading); }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: .88rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+    .stat strong { display: block; font-family: var(--heading); font-size: 1.7rem; line-height: 1.1; margin-bottom: .25rem; }
+    .stat span { color: var(--muted); font-size: .92rem; }
+
+    footer { padding: 2rem 0 3.5rem; color: var(--muted); font-size: .95rem; }
+    footer a { color: var(--link); font-weight: 600; text-decoration: none; }
+    footer a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <a class="back" href="index.html">&larr; Back to portfolio</a>
+      <h1>Case study: <span class="todo">[Project title, e.g. "Unifying monthly eligibility data"]</span></h1>
+      <p class="sub">How I approach a problem and architect a solution, walked through with a dbt project.</p>
+      <ul class="meta">
+        <li><span>Role</span> <span class="todo" style="font-family:var(--body);font-weight:400;">[e.g. Analytics engineer, contract]</span></li>
+        <li><span>Stack</span> <span class="todo" style="font-family:var(--body);font-weight:400;">[dbt, SQL, warehouse, orchestration]</span></li>
+        <li><span>Timeframe</span> <span class="todo" style="font-family:var(--body);font-weight:400;">[e.g. about 3 months]</span></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p class="note">Details are generalized. Company, client, system, and model names have been changed, and figures are shown as ratios or ranges.</p>
+
+    <section>
+      <h2><span class="n">1</span>The problem</h2>
+      <p><span class="todo">[What was broken or missing? Who felt it? Why did it matter to the business? Two to four sentences, no jargon.]</span></p>
+    </section>
+
+    <section>
+      <h2><span class="n">2</span>Constraints</h2>
+      <ul>
+        <li><span class="todo">[Source system or data quality limits, e.g. inconsistent keys, late-arriving files]</span></li>
+        <li><span class="todo">[Timeline, team size, or tooling you had to work within]</span></li>
+        <li><span class="todo">[Who would consume the output, and what they needed to trust it]</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="n">3</span>Options I considered</h2>
+      <p><span class="todo">[One line on how you framed the decision.]</span></p>
+      <div class="options">
+        <div class="option">
+          <h3>Option A: <span class="todo">[approach]</span></h3>
+          <p><span class="todo">[Pros, cons, and why it wasn't the pick.]</span></p>
+        </div>
+        <div class="option chosen">
+          <span class="badge">Chosen</span>
+          <h3>Option B: <span class="todo">[approach]</span></h3>
+          <p><span class="todo">[Why this one won: the tradeoff you accepted and why.]</span></p>
+        </div>
+        <div class="option">
+          <h3>Option C: <span class="todo">[approach]</span></h3>
+          <p><span class="todo">[Pros, cons, and why it wasn't the pick.]</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="n">4</span>Architecture</h2>
+      <p><span class="todo">[Two sentences on the shape of the solution. Edit the box labels in the diagram below to match your layers.]</span></p>
+
+      <div class="diagram-wrap">
+        <svg class="diagram" viewBox="0 0 900 190" role="img" aria-label="Data flows from sources through staging, intermediate, and mart layers to consumers">
+          <g>
+            <rect class="box" x="10"  y="40" width="150" height="100" rx="12" stroke="#1E88A8"/>
+            <text class="t" x="85"  y="85">Sources</text>
+            <text class="s" x="85"  y="108">raw tables, feeds</text>
+
+            <rect class="box" x="190" y="40" width="150" height="100" rx="12" stroke="#3F9C7F"/>
+            <text class="t" x="265" y="85">Staging</text>
+            <text class="s" x="265" y="108">clean, rename, type</text>
+
+            <rect class="box" x="370" y="40" width="150" height="100" rx="12" stroke="#9B5DB5"/>
+            <text class="t" x="445" y="85">Intermediate</text>
+            <text class="s" x="445" y="108">joins, dedupe, logic</text>
+
+            <rect class="box" x="550" y="40" width="150" height="100" rx="12" stroke="#E8A21A"/>
+            <text class="t" x="625" y="85">Marts</text>
+            <text class="s" x="625" y="108">business-ready tables</text>
+
+            <rect class="box" x="730" y="40" width="150" height="100" rx="12" stroke="#F2672A"/>
+            <text class="t" x="805" y="85">Consumers</text>
+            <text class="s" x="805" y="108">BI, analysts, apps</text>
+          </g>
+          <g>
+            <line class="arrow" x1="162" y1="90" x2="184" y2="90"/><polygon class="head" points="188,90 179,85 179,95"/>
+            <line class="arrow" x1="342" y1="90" x2="364" y2="90"/><polygon class="head" points="368,90 359,85 359,95"/>
+            <line class="arrow" x1="522" y1="90" x2="544" y2="90"/><polygon class="head" points="548,90 539,85 539,95"/>
+            <line class="arrow" x1="702" y1="90" x2="724" y2="90"/><polygon class="head" points="728,90 719,85 719,95"/>
+          </g>
+        </svg>
+      </div>
+
+      <ul class="layers">
+        <li style="--c:#3F9C7F"><b>Staging:</b> <span class="todo">[What happens here and the convention you followed.]</span></li>
+        <li style="--c:#9B5DB5"><b>Intermediate:</b> <span class="todo">[Where the hard logic lives, and why it's separated.]</span></li>
+        <li style="--c:#E8A21A"><b>Marts:</b> <span class="todo">[Grain, naming, and who uses them.]</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="n">5</span>Key decisions</h2>
+      <ul>
+        <li><b>Incremental or full refresh:</b> <span class="todo">[What you chose and why.]</span></li>
+        <li><b>Handling edge cases:</b> <span class="todo">[e.g. late data, duplicates, changing source schemas.]</span></li>
+        <li><b>Naming and structure:</b> <span class="todo">[Conventions that made the project easy to hand off.]</span></li>
+      </ul>
+      <p>A generalized example of the pattern I used for staging models:</p>
+<pre><code>-- models/staging/stg_source__entity.sql
+with source as (
+    select * from {{ source('raw_system', 'entity') }}
+),
+
+renamed as (
+    select
+        entity_id,
+        cast(created_at as timestamp) as created_at
+        -- TODO: replace with a small generic example from your project
+    from source
+)
+
+select * from renamed</code></pre>
+    </section>
+
+    <section>
+      <h2><span class="n">6</span>Testing and data quality</h2>
+      <ul>
+        <li><span class="todo">[Generic tests, e.g. unique, not_null, relationships, accepted_values, and where you applied them.]</span></li>
+        <li><span class="todo">[Custom tests or reconciliation checks against the source.]</span></li>
+        <li><span class="todo">[Documentation, freshness checks, or CI that kept it trustworthy.]</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="n">7</span>Outcome</h2>
+      <div class="stats">
+        <div class="stat"><strong class="todo">[X%]</strong><span class="todo">[what improved, as a ratio or range]</span></div>
+        <div class="stat"><strong class="todo">[N&times;]</strong><span class="todo">[e.g. faster runs or fewer manual steps]</span></div>
+        <div class="stat"><strong class="todo">[metric]</strong><span class="todo">[what teams could now do]</span></div>
+      </div>
+      <h3>What I'd do differently</h3>
+      <p><span class="todo">[One honest reflection. This is where people see how you think.]</span></p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap"><a href="index.html">&larr; Back to portfolio</a></div>
+  </footer>
+</body>
+</html>
