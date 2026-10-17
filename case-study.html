@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Legacy Data Conversion | Carrie Minerich</title>
+  <meta name="description" content="How I approach a data problem and architect a solution: a dbt project walkthrough.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <!--
+    BEFORE PUBLISHING: search this file for "TODO". Every yellow-highlighted
+    placeholder is something to replace or delete. Remember to anonymize
+    company, client, vendor, model, and column names, and use ratios or
+    ranges instead of exact figures.
+  -->
+  <style>
+    :root {
+      --ink: #0F3D4C;
+      --ink-deep: #0A2A35;
+      --fox: #F2672A;
+      --sun: #FFC24B;
+      --snow: #FFF8F0;
+
+      --bg: #EEF5F5;
+      --card: #FFFFFF;
+      --text: #14262E;
+      --muted: #4A5F69;
+      --border: #D5E2E4;
+      --link: #B93A0B;
+      --focus: #0F3D4C;
+      --code-bg: #0F2A33;
+      --code-text: #E6EFF1;
+
+      --heading: "Bricolage Grotesque", "Trebuchet MS", "Segoe UI", sans-serif;
+      --body: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0B1B21;
+        --card: #132830;
+        --text: #E6EFF1;
+        --muted: #9DB3BA;
+        --border: #23414B;
+        --link: #FF9A62;
+        --focus: #FFC24B;
+        --code-bg: #091418;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--body); background: var(--bg); color: var(--text); line-height: 1.65; }
+    a:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+
+    /* Placeholder highlight: remove each one as you fill it in */
+    .todo {
+      background: rgba(255, 194, 75, .45);
+      color: inherit;
+      padding: .05em .3em;
+      border-radius: 4px;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero {
+      background-color: var(--ink);
+      background-image: radial-gradient(rgba(255,255,255,.09) 1.2px, transparent 1.2px);
+      background-size: 22px 22px;
+      color: var(--snow);
+      padding: 2.25rem 0 3rem;
+      border-bottom: 8px solid var(--fox);
+    }
+    .back { color: var(--sun); font-weight: 600; text-decoration: none; font-size: .95rem; }
+    .back:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .hero a:focus-visible { outline-color: var(--sun); }
+    .hero h1 {
+      font-family: var(--heading);
+      font-weight: 800;
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin: 1.5rem 0 .75rem;
+    }
+    .hero .sub { font-size: 1.15rem; color: #D6E6EA; max-width: 36em; margin: 0 0 1.5rem; }
+    .hero .todo { color: var(--ink-deep); }
+    .meta { display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem; margin: 0; padding: 0; list-style: none; }
+    .meta li { font-size: .95rem; }
+    .meta span { display: block; font-weight: 700; font-family: var(--heading); color: var(--sun); }
+
+    /* ---------- Content ---------- */
+    main { padding: 1.5rem 0 2rem; }
+    .note {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--sun);
+      border-radius: 4px 12px 12px 4px;
+      padding: .9rem 1.1rem;
+      color: var(--muted);
+      font-size: .95rem;
+      margin: 1.5rem 0 .5rem;
+    }
+    section { padding: 2rem 0 .25rem; }
+    h2 {
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: -0.01em;
+      margin: 0 0 .75rem;
+    }
+    h2 .n { color: var(--link); margin-right: .4rem; }
+    h3 { font-family: var(--heading); font-size: 1.1rem; margin: 0 0 .4rem; }
+    p { margin: 0 0 1rem; }
+    ul { padding-left: 1.2rem; margin: 0 0 1rem; }
+    li { margin-bottom: .4rem; }
+
+    .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; margin: 1rem 0; }
+    .option {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: 6px solid var(--border);
+      border-radius: 4px 4px 12px 12px;
+      padding: 1rem 1.1rem;
+    }
+    .option p { color: var(--muted); font-size: .95rem; margin: 0; }
+    .option.chosen { border-top-color: var(--fox); }
+    .badge {
+      display: inline-block;
+      font-size: .78rem;
+      font-weight: 700;
+      background: var(--fox);
+      color: var(--ink-deep);
+      padding: .1rem .6rem;
+      border-radius: 999px;
+      margin-bottom: .5rem;
+    }
+
+    .diagram-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    .diagram { display: block; min-width: 700px; width: 100%; height: auto; }
+    .diagram .box { fill: var(--card); stroke-width: 3; }
+    .diagram .t { fill: var(--text); font-family: var(--heading); font-weight: 700; font-size: 17px; text-anchor: middle; }
+    .diagram .s { fill: var(--muted); font-family: var(--body); font-size: 12.5px; text-anchor: middle; }
+    .diagram .arrow { stroke: var(--muted); stroke-width: 2.5; fill: none; }
+    .diagram .head { fill: var(--muted); }
+    .diagram .box-x { fill: var(--card); stroke: var(--muted); stroke-width: 2.5; stroke-dasharray: 7 5; }
+    .caption { color: var(--muted); font-size: .92rem; margin: -.25rem 0 1.25rem; }
+
+    .layers { padding-left: 0; list-style: none; }
+    .layers li { padding-left: 1rem; border-left: 5px solid var(--c, var(--border)); margin-bottom: .9rem; }
+    .layers b { font-family: var(--heading); }
+
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      overflow-x: auto;
+      font-size: .88rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin: 1rem 0 1.5rem; }
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+    }
+    .stat strong { display: block; font-family: var(--heading); font-size: 1.7rem; line-height: 1.1; margin-bottom: .25rem; }
+    .stat span { color: var(--muted); font-size: .92rem; }
+
+
+    details { margin: 1rem 0; }
+    details summary { cursor: pointer; font-weight: 600; color: var(--link); }
+    details summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+    details[open] summary { margin-bottom: .6rem; }
+    details pre { margin-top: 0; }
+    footer { padding: 2rem 0 3.5rem; color: var(--muted); font-size: .95rem; }
+    footer a { color: var(--link); font-weight: 600; text-decoration: none; }
+    footer a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <a class="back" href="index.html">&larr; Back to portfolio</a>
+      <h1>Case study: Legacy data conversion</h1>
+      <p class="sub">How I approach a problem and architect a solution, walked through with a dbt project.</p>
+      <ul class="meta">
+        <li><span>Role</span> Analytics engineer, contract</li>
+        <li><span>Stack</span> dbt, SQL, warehouse, orchestration</li>
+        <li><span>Timeframe</span> About 6 months</li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p class="note">Details are generalized. Company, client, system, and model names have been changed, and figures are shown as ratios or ranges.</p>
+
+    <section>
+      <h2><span class="n">1</span>The problem</h2>
+      <p>An organization relied on reporting built on a legacy system that was hard to maintain and being retired. The data had to move to a modern warehouse without breaking the user interface people depended on, and without losing trust in the reports along the way.</p>
+    </section>
+
+    <section>
+      <h2><span class="n">2</span>Constraints</h2>
+      <ul>
+        <li><b>Messy sources:</b> the legacy data carried years of undocumented logic, with inconsistent keys, mixed formats, and duplicate records.</li>
+        <li><b>Parity:</b> the new numbers had to match the old ones where they should, and any difference needed an explanation.</li>
+        <li><b>One-time cutover:</b> the new pipeline was built ahead of time, then the legacy system was turned off, the data loaded, and the new system turned on without disruption. There was no second try.</li>
+        <li><b>Time and people:</b> about six months, a team of three, and multiple agency stakeholders who needed to sign off.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="n">3</span>Options I considered</h2>
+      <p>Three ways to get from the legacy system to the new one.</p>
+      <div class="options">
+        <div class="option">
+          <h3>Option A: Hand-written SQL</h3>
+          <p>Manually written queries with hardcoded table names and schemas, manual data loads, and stored procedures for orchestration. Easy for many teams to read, but hard to maintain, hard to scale, and slow to build.</p>
+        </div>
+        <div class="option">
+          <h3>Option B: dbt end to end</h3>
+          <p>I demoed dbt to a skeptical team and got the go-ahead to try it. I picked it up quickly and started building models and transformations, with the dbt DAG handling orchestration. Other teams would have had to learn dbt to read and change the load logic.</p>
+        </div>
+        <div class="option chosen">
+          <span class="badge">Chosen</span>
+          <h3>Option C: A combination</h3>
+          <p>dbt for the bronze and silver layers, then stored procedures for the final load, since many teams can read and write them without learning dbt. The tradeoff: no orchestration tool like Airflow, so the DAG was pieced together from the models.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2><span class="n">4</span>Architecture</h2>
+      <p>A medallion-style pipeline: dbt for the first two layers and stored procedures for the final load. Two staging layers kept data quality checks separate from type conversions.</p>
+
+      <div class="diagram-wrap">
+        <svg class="diagram" viewBox="0 0 900 270" role="img" aria-label="Data flows from legacy data through bronze and silver staging layers, then stored procedures, into the new system. Records dropped at bronze and silver go to excluded tables where they are counted.">
+          <g>
+            <rect class="box" x="10"  y="40" width="150" height="100" rx="12" stroke="#1E88A8"/>
+            <text class="t" x="85"  y="76">Legacy data</text>
+            <text class="s" x="85"  y="98">legacy files</text>
+            <text class="s" x="85"  y="115">and tables</text>
+
+            <rect class="box" x="190" y="40" width="150" height="100" rx="12" stroke="#3F9C7F"/>
+            <text class="t" x="265" y="76">Bronze</text>
+            <text class="s" x="265" y="98">included_*</text>
+            <text class="s" x="265" y="115">filter and test</text>
+
+            <rect class="box" x="370" y="40" width="150" height="100" rx="12" stroke="#9B5DB5"/>
+            <text class="t" x="445" y="76">Silver</text>
+            <text class="s" x="445" y="98">stg_included_*</text>
+            <text class="s" x="445" y="115">trim, cast, index</text>
+
+            <rect class="box" x="550" y="40" width="150" height="100" rx="12" stroke="#E8A21A"/>
+            <text class="t" x="625" y="76">Procedures</text>
+            <text class="s" x="625" y="98">bulk_insert_*</text>
+            <text class="s" x="625" y="115">readable by any team</text>
+
+            <rect class="box" x="730" y="40" width="150" height="100" rx="12" stroke="#F2672A"/>
+            <text class="t" x="805" y="76">New system</text>
+            <text class="s" x="805" y="98">the application</text>
+            <text class="s" x="805" y="115">people rely on</text>
+          </g>
+          <g>
+            <line class="arrow" x1="162" y1="90" x2="184" y2="90"/><polygon class="head" points="188,90 179,85 179,95"/>
+            <line class="arrow" x1="342" y1="90" x2="364" y2="90"/><polygon class="head" points="368,90 359,85 359,95"/>
+            <line class="arrow" x1="522" y1="90" x2="544" y2="90"/><polygon class="head" points="548,90 539,85 539,95"/>
+            <line class="arrow" x1="702" y1="90" x2="724" y2="90"/><polygon class="head" points="728,90 719,85 719,95"/>
+          </g>
+                  <g>
+            <line class="arrow" x1="265" y1="142" x2="265" y2="176"/><polygon class="head" points="265,183 259,173 271,173"/>
+            <rect class="box-x" x="190" y="186" width="150" height="62" rx="12"/>
+            <text class="t" x="265" y="214">excluded_*</text>
+            <text class="s" x="265" y="234">counted, not lost</text>
+
+            <line class="arrow" x1="445" y1="142" x2="445" y2="176"/><polygon class="head" points="445,183 439,173 451,173"/>
+            <rect class="box-x" x="370" y="186" width="150" height="62" rx="12"/>
+            <text class="t" x="445" y="214">stg_excluded_*</text>
+            <text class="s" x="445" y="234">counted, not lost</text>
+          </g>
+        </svg>
+      </div>
+
+      <p class="caption">The arrows down are the explicit drops: each stage has an excluded counterpart, so a record the conversion can't represent is counted instead of lost.</p>
+
+      <ul class="layers">
+        <li style="--c:#3F9C7F"><b>Bronze (<code>included_*</code>):</b> unions each segment's extract files and keeps only what can convert, with data quality tests and the table joins. A matching <code>excluded_*</code> model holds everything else. Tables are named after the legacy files and tables so every record traces back to its source.</li>
+        <li style="--c:#9B5DB5"><b>Silver (<code>stg_included_*</code>):</b> trims, casts, and data type transformations, plus indexes, done once at this boundary so nothing downstream has to.</li>
+        <li style="--c:#E8A21A"><b>Stored procedures:</b> they load from the silver layer using bulk inserts, so the final step is plain SQL that other teams can read and change.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2><span class="n">5</span>Key decisions</h2>
+      <ul>
+        <li><b>Full refresh, not incremental:</b> this was a one-time data load, so there was no need for incremental logic.</li>
+        <li><b>Edge cases:</b> data tests helped flush them out, and I ran test data through the application. The target schema changed constantly because the application was being built at the same time as the pipeline, while the legacy source stayed consistent.</li>
+        <li><b>Naming for traceability:</b> tables are named for the legacy files and tables, and stored procedures follow <code>bulk_insert_table_name</code>, so anything can be tracked back at a glance.</li>
+        <li><b>Bulk inserts:</b> the load needed true bulk inserts, not the loop-over-JSON approach you'd typically see with an API.</li>
+        <li><b>Every drop is explicit:</b> each segment has an <code>included</code> model and an exact-complement <code>excluded</code> model, so a record the conversion can't represent is counted, reconciled, and available to read instead of disappearing between two joins in a loader. Tracing one silent drop this way turned up several thousand records across about a dozen codes.</li>
+        <li><b>Seeing where the time went:</b> I parsed dbt's run results JSON into a Gantt chart of every thread, which showed where the run was slow. The expected timings in the go-live runbook came from it.</li>
+        <li><b>Locks under concurrency:</b> dropping foreign keys inside a loader needs an exclusive lock on parent tables that the level's other loaders were already holding, and it failed under parallel load. Dropping and rebuilding them became separate steps before and after each level's fan-out.</li>
+        <li><b>A go-live runbook:</b> a timed, step-by-step plan with the queries embedded, written so anyone on the team could run cutover without needing me.</li>
+      </ul>
+
+      <h3>Finding the right table in every extract</h3>
+      <p>Each extract named its tables with a different suffix, so models resolve them by prefix. An early version returned an empty list on a miss, which surfaced as a confusing "relation does not exist" error. Now a missing required segment raises an error that lists what the schema actually holds, and an optional segment just warns. The core lookup is below.</p>
+      <details><summary>Show the code</summary><pre><code class="language-sql">{% macro get_table_by_prefix(schema_name, prefix) %}
+    {% set query %}
+        select table_name
+        from information_schema.tables
+        where table_schema = '{{ schema_name }}'
+          and table_name like '{{ prefix | lower }}'
+        order by table_name desc
+    {% endset %}
+    {% set results = run_query(query) %}
+
+    {% if execute and results.rows %}
+        {{ return(results.columns[0].values()[0]) }}
+    {% endif %}
+{% endmacro %}</code></pre></details>
+
+      <h3>Bronze: make every drop explicit</h3>
+      <p>This is the first stage. Records that fail a condition aren't dropped quietly. A matching excluded model holds the exact complement, so they show up in the counts and the reconciliation test.</p>
+      <details><summary>Show the code</summary><pre><code class="language-sql">-- included_seg_a
+-- Keeps only what can convert. excluded_seg_a holds the exact complement.
+{% set relations = dbt_utils.get_relations_by_prefix(
+    schema = var('primary_source_schema'),
+    prefix = 'seg_a'
+) %}
+
+-- union every extract file that starts with the prefix (three files for this segment)
+with source as (
+    {{ dbt_utils.union_relations(relations = relations, source_column_name = none) }}
+)
+
+select *
+from source
+-- where &lt;the conditions that decide what converts&gt;</code></pre></details>
+
+      <h3>Silver: clean once, at the boundary</h3>
+      <p>Fields arrived blank-padded, and every loader trimmed them itself and re-parsed the same dates. Doing both once here removed that repeated work across millions of rows and let a plain index serve the lookups.</p>
+      <details><summary>Show the code</summary><pre><code class="language-sql">{{ config(
+    alias   = 'included_seg_a',
+    schema  = 'silver',
+    indexes = [{'columns': ['record_id'], 'type': 'btree'}]
+) }}
+
+-- stg_included_seg_a
+-- Trim and parse once at the boundary so nothing downstream has to. star() keeps this a
+-- passthrough for every other column.
+select
+    btrim(record_id)                    as record_id,
+    public.try_cast_date(begin_date)    as begin_date,
+    {{ dbt_utils.star(from = ref('included_seg_a'), except = ['record_id', 'begin_date']) }}
+from {{ ref('included_seg_a') }}</code></pre></details>
+
+      <h3>A bulk load procedure</h3>
+      <p>Each loader is a stored procedure wrapped in a dbt macro and deployed by a run-start hook, so the whole load is versioned in the project. The <code>migration</code> schema is the schema in the target database where the stored procedures and functions live. The full procedures time every phase, build their rows with <code>CREATE TABLE AS</code> because the planner will parallelize that but never an <code>INSERT ... SELECT</code>, and give ties in any ranking explicit tiebreakers so the same extract gives the same result on every run. The version below keeps that structure and replaces the real queries with a <code>select *</code>.</p>
+      <details><summary>Show the code</summary><pre><code class="language-sql">{% macro bulk_insert_entity_address() %}
+{% raw %}
+-- "migration" is the schema in the target database that holds our procedures and functions
+create or replace procedure migration.bulk_insert_entity_address()
+    language plpgsql
+as $$
+DECLARE
+    v_count   BIGINT;
+    v_started timestamptz := clock_timestamp();
+    v_phase   timestamptz;
+BEGIN
+    RAISE NOTICE '[start] bulk_insert_entity_address';
+
+    -- Build the rows with CREATE TABLE AS: the planner can parallelize it,
+    -- but never an INSERT ... SELECT.
+    DROP TABLE IF EXISTS migration.entity_address_src;
+    v_phase := clock_timestamp();
+    CREATE UNLOGGED TABLE migration.entity_address_src AS
+    SELECT * FROM silver.stg_included_address;
+    CALL migration.log_duration('bulk_insert_entity_address:build_src',
+                                clock_timestamp() - v_phase);
+
+    -- Drop the non-constraint indexes so the single-threaded INSERT doesn't pay
+    -- index maintenance on every row; they are rebuilt afterward.
+    CALL migration.drop_bulk_load_indexes('target.entity_address'::regclass);
+
+    RAISE NOTICE '[step] bulk_insert_entity_address: inserting target.entity_address';
+    v_phase := clock_timestamp();
+    INSERT INTO target.entity_address
+    SELECT * FROM migration.entity_address_src;
+
+    -- Read the row count before any CALL: GET DIAGNOSTICS sees the last statement.
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    CALL migration.log_duration('bulk_insert_entity_address:insert_target',
+                                clock_timestamp() - v_phase);
+
+    CALL migration.rebuild_bulk_load_indexes('target.entity_address'::regclass);
+
+    CALL migration.log_count('bulk_insert_entity_address', 'inserted', v_count);
+    CALL migration.log_duration('bulk_insert_entity_address', clock_timestamp() - v_started);
+END $$;
+{% endraw %}
+{% endmacro %}</code></pre></details>
+
+      <h3>Configuration and run hooks</h3>
+      <p>Source schemas come from environment variables, so the same project runs against each load. Tests are set to error and store their failures in a results schema, which is what the triage query reads. Hooks deploy the stored procedures and create the test results tables before any model runs, and log the results at the end. The loads themselves are models: each level is a view whose pre-hook calls one stored procedure, chained with <code>ref()</code> so dbt runs the levels in order.</p>
+      <details><summary>Show the code</summary><pre><code class="language-yaml">vars:
+  primary_source_schema: "{{ env_var('PRIMARY_SOURCE_SCHEMA') }}"
+  secondary_source_schema: "{{ env_var('SECONDARY_SOURCE_SCHEMA') }}"
+
+data_tests:
+  +severity: error
+  +store_failures: true
+  +schema: test_results
+
+on-run-start:
+  - "{{ deploy_load_procedures() }}"
+  - "{{ create_test_results_tables() }}"
+
+on-run-end:
+  # The load doesn't run from here. Each level is a model (a view) whose pre_hook calls one
+  # stored procedure, chained by ref(), so it has already run by the time this fires.
+  - "{{ log_test_results() }}"</code></pre></details>
+
+      <h3>Tuning the heavy tables</h3>
+      <p>Models that build tables get session settings through pre-hooks. The cluster's defaults were small enough that sorts spilled hundreds of gigabytes to temp files, so memory went up. Parallelism went the other way: the cluster allowed more workers per query than its shared pool could supply across four dbt threads, and Postgres silently runs a serial plan when the pool is empty, so fewer workers per query meant more real parallelism. One model swung from seconds to minutes between runs on the same code. I treated the memory setting as tuning, not the fix, and noted the query rewrite to measure separately.</p>
+      <details><summary>Show the code</summary><pre><code class="language-yaml">models:
+  my_project:
+    silver:
+      +materialized: table
+      +schema: silver
+      # SET LOCAL lasts the transaction dbt wraps each model in. Sized for 4 dbt threads:
+      # 4 threads x 4 workers = 16 fits inside the 24-worker pool. The cluster default of
+      # 8 per query against a pool of 16 asked for 32, and Postgres silently fell back
+      # to serial plans when the pool ran dry.
+      +pre_hook:
+        - "SET LOCAL work_mem = '512MB'"
+        - "SET LOCAL max_parallel_workers = 24"
+        - "SET LOCAL max_parallel_workers_per_gather = 4"</code></pre></details>
+    </section>
+
+    <section>
+      <h2><span class="n">6</span>Testing and data quality</h2>
+      <ul>
+        <li>Data quality tests in the bronze layer, run against the raw data, surfaced edge cases early.</li>
+        <li>Test data was loaded and exercised in the application itself, not just checked in the warehouse.</li>
+        <li><b>Reconciliation:</b> a custom test confirms that, for every partition, the source row count equals the included plus excluded rows.</li>
+        <li><b>Triage:</b> every warning and error is classified as new, undocumented, a spike, or known, by comparing it with the full run history and a table of documented exceptions. That put the surprises at the top of the list on go-live day.</li>
+        <li><b>Query workbooks:</b> additional test suites lived in dbt's <code>analyses</code> folder, each labeled with the level to run it after, and were run alongside the load during go-live.</li>
+      </ul>
+
+      <h3>Source-to-target reconciliation</h3>
+      <details><summary>Show the code</summary><pre><code class="language-sql">-- tests/assert_staging_counts_match_source.sql
+-- source count == included + excluded, for every partition
+{{ config(severity = 'warn') }}
+
+{% set domains = partitions() | list | sort %}
+
+with reconciliation as (
+    {% for domain in domains %}
+    select
+        '{{ domain }}' as domain,
+        (select count(*) from {{ ref('stg_included_' ~ domain) }}) as included_count,
+        (select count(*) from {{ ref('stg_excluded_' ~ domain) }}) as excluded_count,
+        {{ source_count_sql(domain) }} as source_count
+    {% if not loop.last %}union all{% endif %}
+    {% endfor %}
+)
+
+select
+    domain,
+    included_count,
+    excluded_count,
+    included_count + excluded_count as combined_count,
+    source_count,
+    source_count - (included_count + excluded_count) as delta
+from reconciliation
+where source_count &lt;&gt; (included_count + excluded_count)</code></pre></details>
+
+      <h3>Go-live triage</h3>
+      <p>This query compared the latest run's failures with the full history.</p>
+      <details><summary>Show the code</summary><pre><code class="language-sql">with latest_run as (
+    select invocation_id, run_started_at
+    from test_results.results
+    order by run_started_at desc
+    limit 1
+),
+latest as (
+    select f.test_name, f.status, f.failures
+    from test_results.results f
+    join latest_run lr on f.invocation_id = lr.invocation_id
+    where f.status in ('warn', 'error')
+),
+history as (
+    -- worst failure count seen on any earlier run
+    select r.test_name, max(r.failures) as max_prior_failures
+    from test_results.results r
+    join latest_run lr on true
+    where r.status in ('warn', 'error')
+      and r.run_started_at &lt; lr.run_started_at
+    group by r.test_name
+)
+select
+    latest.test_name,
+    latest.failures as current_failures,
+    history.max_prior_failures,
+    case
+        when history.test_name is null then 'NEW - never failed before'
+        when ke.test_name is null then 'UNDOCUMENTED - has history, not yet triaged'
+        when history.max_prior_failures &gt; 0
+             and latest.failures &gt; history.max_prior_failures * 1.5
+            then 'SPIKE - well above its historical max'
+        else 'KNOWN - consistent with history'
+    end as classification
+from latest
+left join history on history.test_name = latest.test_name
+left join test_results.known_exceptions ke on ke.test_name = latest.test_name
+order by
+    case
+        when history.test_name is null then 1
+        when ke.test_name is null then 2
+        when history.max_prior_failures &gt; 0
+             and latest.failures &gt; history.max_prior_failures * 1.5 then 3
+        else 4
+    end,
+    latest.failures desc nulls last</code></pre></details>
+    </section>
+
+    <section>
+      <h2><span class="n">7</span>Outcome</h2>
+      <div class="stats">
+        <div class="stat"><strong>Tests passed</strong><span>Daily builds of real data in the run-up to switchover meant the data quality tests passed on the go-live load.</span></div>
+        <div class="stat"><strong>On time</strong><span>The data load finished within the allowed target time frame.</span></div>
+        <div class="stat"><strong>Reliable data</strong><span>Consistent, accurate, and dependable data behind the new system.</span></div>
+      </div>
+      <h3>For the people using it</h3>
+      <p>The new UI has input constraints and drop-downs, so there is less manual work. It is also easier to access and more secure.</p>
+      <h3>Proving dbt</h3>
+      <p>The project showed that dbt, an open source tool, is valuable for transformation and orchestration in ETL. No one had heard of it or used it before I introduced it.</p>
+      <h3>What I'd do differently</h3>
+      <p>Add an orchestration tool such as Airflow from the start, instead of piecing the DAG together from the dbt models.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap"><a href="index.html">&larr; Back to portfolio</a></div>
+  </footer>
+</body>
+</html>
